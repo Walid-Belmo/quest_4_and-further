@@ -288,6 +288,7 @@ body::after {
     line-height: 2;
     color: #e5e7eb;
     margin-top: 20px;
+    white-space: pre;
 }
 
 .code-line {

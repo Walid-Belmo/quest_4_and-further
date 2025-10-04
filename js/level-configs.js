@@ -228,9 +228,13 @@ function formatCodeForDisplay(code) {
     let html = '';
     
     lines.forEach((line) => {
+        // Escape HTML characters
         let displayLine = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        // Highlight keywords (void setup, void loop, int, float, String)
         displayLine = displayLine.replace(/\b(void setup|void loop|int|float|String)\b/g, '<span class="keyword">$1</span>');
+        // Highlight comments
         displayLine = displayLine.replace(/(\/\/.*)/g, '<span class="comment">$1</span>');
+        
         html += `<div class="code-line">${displayLine || '&nbsp;'}</div>`;
     });
     
