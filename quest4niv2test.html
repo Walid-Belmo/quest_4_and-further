@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quest 4 - Niveau 2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .video-background video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            opacity: 0.15;
+            filter: blur(2px);
+        }
+
+        .video-background::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(10, 10, 15, 0.7), rgba(10, 10, 15, 0.85));
+            z-index: 1;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(167, 139, 250, 0.15), transparent);
+            border-radius: 50%;
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.12), transparent);
+            border-radius: 50%;
+            bottom: -150px;
+            left: -150px;
+            animation: float 15s ease-in-out infinite reverse;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(50px, 50px) rotate(180deg); }
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .blob-card {
+            background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+            border-radius: 40px;
+            padding: 50px;
+            margin-bottom: 40px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blob-card::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.1), transparent);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .header {
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #a78bfa 0%, #22d3ee 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            letter-spacing: -2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .level-info {
+            color: #9ca3af;
+            font-size: 1.4em;
+            font-weight: 500;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 35px;
+        }
+
+        .challenge-box {
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(34, 211, 238, 0.1));
+            border: 2px solid rgba(167, 139, 250, 0.2);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(167, 139, 250, 0.1);
+        }
+
+        .challenge-box h4 {
+            color: #a78bfa;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .challenge-box p {
+            color: #d1d5db;
+            font-size: 1.15em;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .microcontroller-container {
+            background: #0a0a0f;
+            border: 2px solid rgba(34, 211, 238, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .microcontroller {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .pins-left, .pins-right {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .pin {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pin-label {
+            color: #8b949e;
+            font-size: 0.9em;
+            min-width: 60px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .led {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #21262d;
+            border: 2px solid #30363d;
+            transition: all 0.3s;
+        }
+
+        .led.on {
+            background: #58a6ff;
+            border-color: #58a6ff;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.8);
+        }
+
+        .chip {
+            width: 180px;
+            height: 400px;
+            background: linear-gradient(135deg, #1e1e2e, #2a2a3e);
+            border: 3px solid #58a6ff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            color: #58a6ff;
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.5);
+            font-family: 'Courier New', monospace;
+        }
+
+        .variables-display {
+            background: rgba(167, 139, 250, 0.1);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            min-height: 60px;
+        }
+
+        .variables-display h5 {
+            color: #a78bfa;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .variable-item {
+            color: #d1d5db;
+            font-size: 0.95em;
+            margin: 5px 0;
+        }
+
+        .variable-name {
+            color: #22d3ee;
+            font-weight: bold;
+        }
+
+        .code-display {
+            background: #0a0a0f;
+            border: 2px solid rgba(34, 211, 238, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 1.05em;
+            line-height: 2;
+            color: #e5e7eb;
+            margin-top: 20px;
+        }
+
+        .code-line {
+            padding: 2px 5px;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        .code-line.executing {
+            background: rgba(167, 139, 250, 0.3);
+            box-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+        }
+
+        .code-line.error {
+            background: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+            border-left: 3px solid #ef4444;
+        }
+
+        .keyword {
+            color: #a78bfa;
+            font-weight: 700;
+        }
+
+        .comment {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .code-editor {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(167, 139, 250, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 1.05em;
+            line-height: 1.8;
+            color: #e5e7eb;
+            min-height: 400px;
+            width: 100%;
+            resize: vertical;
+            outline: none;
+        }
+
+        .code-editor:focus {
+            border-color: #22d3ee;
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 800;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #a78bfa, #22d3ee);
+            color: #0a0a0f;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 15px 40px rgba(167, 139, 250, 0.4),
+                0 0 60px rgba(34, 211, 238, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 
+                0 20px 50px rgba(167, 139, 250, 0.6),
+                0 0 100px rgba(34, 211, 238, 0.4);
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #4b5563, #6b7280);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            display: none;
+        }
+
+        .btn-hint {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+
+        .feedback-box {
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(34, 211, 238, 0.12));
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 30px;
+            padding: 35px;
+            margin-top: 35px;
+            display: none;
+            box-shadow: 0 15px 50px rgba(167, 139, 250, 0.2);
+        }
+
+        .feedback-box.visible {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback-box h4 {
+            color: #a78bfa;
+            font-size: 1.7em;
+            margin-bottom: 18px;
+            font-weight: 800;
+        }
+
+        .feedback-box p {
+            color: #d1d5db;
+            font-size: 1.2em;
+            line-height: 1.8;
+        }
+
+        .hint-box {
+            background: rgba(34, 211, 238, 0.1);
+            border: 2px solid rgba(34, 211, 238, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .hint-box.visible {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .hint-box h5 {
+            color: #22d3ee;
+            font-size: 1.3em;
+            margin-bottom: 12px;
+        }
+
+        .hint-box p {
+            color: #d1d5db;
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.9em;
+            margin-top: 5px;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 5px;
+            border-left: 3px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-heights-in-a-sunset-26070-large.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div class="container">
+        <div class="blob-card header">
+            <h1>Quest 4 - Écris Ton Propre Code</h1>
+            <div class="level-info">Niveau 2 : Ajoute une Variable</div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left side: Example -->
+            <div class="blob-card">
+                <div class="challenge-box">
+                    <h4>Exemple à Suivre</h4>
+                    <p>Ce code allume <strong>pin1</strong> et crée une <strong>variable</strong> :</p>
+                </div>
+
+                <div class="microcontroller-container">
+                    <div class="microcontroller">
+                        <div class="pins-left">
+                            <div class="pin">
+                                <span class="pin-label">Pin 1</span>
+                                <div class="led" id="example-led1"></div>
+                            </div>
+                            <div class="pin">
+                                <span class="pin-label">Pin 2</span>
+                                <div class="led" id="example-led2"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="chip">µC</div>
+                        
+                        <div class="pins-right">
+                            <div class="pin">
+                                <div class="led" id="example-led9"></div>
+                                <span class="pin-label">Pin 9</span>
+                            </div>
+                            <div class="pin">
+                                <div class="led" id="example-led10"></div>
+                                <span class="pin-label">Pin 10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="variables-display" id="exampleVariables">
+                        <h5>📦 Variables</h5>
+                        <div id="exampleVarList"></div>
+                    </div>
+                </div>
+
+                <div class="code-display" id="exampleCode">
+<div class="code-line"><span class="keyword">void setup</span>()</div>
+<div class="code-line">{</div>
+<div class="code-line">    pin1;</div>
+<div class="code-line">    compteur = 0;</div>
+<div class="code-line">    pin1_allumé;</div>
+<div class="code-line">}</div>
+<div class="code-line"></div>
+<div class="code-line"><span class="keyword">void loop</span>()</div>
+<div class="code-line">{</div>
+<div class="code-line">    <span class="comment">// Rien ici</span></div>
+<div class="code-line">}</div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn" onclick="runExample()"><span>Exécuter l'Exemple</span></button>
+                    <button class="btn btn-secondary" onclick="resetExample()"><span>Réinitialiser</span></button>
+                </div>
+
+                <div class="hint-box" id="hintBox">
+                    <h5>Aide</h5>
+                    <p><strong>Étape 1 :</strong> Garde la ligne <code>pin1;</code></p>
+                    <p><strong>Étape 2 :</strong> Ajoute <code>pin9;</code> après pin1</p>
+                    <p><strong>Étape 3 :</strong> Garde la variable <code>compteur = 0;</code></p>
+                    <p><strong>Étape 4 :</strong> Change <code>pin1_allumé;</code> en <code>pin9_allumé;</code></p>
+                    <p><strong>Ordre important :</strong> Déclarations de pins d'abord, puis variables, puis actions sur les pins</p>
+                </div>
+            </div>
+
+            <!-- Right side: Student code -->
+            <div class="blob-card">
+                <div class="challenge-box">
+                    <h4>À Toi de Jouer</h4>
+                    <p>Modifie le code pour :</p>
+                    <p>• Garder <strong>pin1</strong> et ajouter <strong>pin9</strong></p>
+                    <p>• Garder la variable <strong>compteur = 0</strong></p>
+                    <p>• Allumer <strong>pin9</strong> au lieu de pin1</p>
+                </div>
+
+                <div class="microcontroller-container">
+                    <div class="microcontroller">
+                        <div class="pins-left">
+                            <div class="pin">
+                                <span class="pin-label">Pin 1</span>
+                                <div class="led" id="student-led1"></div>
+                            </div>
+                            <div class="pin">
+                                <span class="pin-label">Pin 2</span>
+                                <div class="led" id="student-led2"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="chip">µC</div>
+                        
+                        <div class="pins-right">
+                            <div class="pin">
+                                <div class="led" id="student-led9"></div>
+                                <span class="pin-label">Pin 9</span>
+                            </div>
+                            <div class="pin">
+                                <div class="led" id="student-led10"></div>
+                                <span class="pin-label">Pin 10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="variables-display" id="studentVariables">
+                        <h5>📦 Variables</h5>
+                        <div id="studentVarList"></div>
+                    </div>
+                </div>
+
+                <div id="studentCodeDisplay" class="code-display" style="display: none;"></div>
+                <textarea class="code-editor" id="codeEditor" placeholder="Écris ton code ici..."></textarea>
+
+                <div class="controls">
+                    <button class="btn" id="btnExecute" onclick="runStudentCode()"><span>Exécuter Mon Code</span></button>
+                    <button class="btn btn-stop" id="btnStop" onclick="stopExecution()"><span>⏹ Arrêter</span></button>
+                    <button class="btn btn-secondary" onclick="resetStudent()"><span>Réinitialiser</span></button>
+                    <button class="btn btn-hint" onclick="toggleHint()"><span>Voir l'Aide</span></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls" style="margin-top: 40px;">
+            <button class="btn btn-secondary" onclick="prevLevel()"><span>← Niveau Précédent</span></button>
+            <button class="btn" onclick="checkCode()"><span>✓ Vérifier Mon Code</span></button>
+            <button class="btn" onclick="nextLevel()"><span>Niveau Suivant →</span></button>
+        </div>
+
+        <div class="blob-card feedback-box" id="feedbackBox">
+            <h4 id="feedbackTitle"></h4>
+            <p id="feedbackText"></p>
+        </div>
+    </div>
+
+    <script>
+        // Level configuration
+        const LEVEL_CONFIG = {
+            validateSetup: true,
+            validateLoop: false,
+            loopIterations: 0,
+            expectedAfterSetup: {
+                pins: {
+                    pin1: { declared: true, on: false },
+                    pin9: { declared: true, on: true }
+                },
+                variables: {
+                    compteur: '0'
+                }
+            }
+        };
+
+        const exampleVariables = {};
+        const studentVariables = {};
+        let isExecuting = false;
+        let shouldStopExecution = false;
+
+        function updateVariableDisplay(vars, displayId) {
+            const display = document.getElementById(displayId);
+            if (Object.keys(vars).length === 0) {
+                display.innerHTML = '<span style="color: #6b7280;">Aucune variable</span>';
+            } else {
+                display.innerHTML = Object.entries(vars)
+                    .map(([name, value]) => `<div class="variable-item"><span class="variable-name">${name}</span> = ${value}</div>`)
+                    .join('');
+            }
+        }
+
+        // Example code execution
+        async function runExample() {
+            resetExample();
+            const lines = document.querySelectorAll('#exampleCode .code-line');
+            
+            await highlightLine(lines, 0, 500);
+            await highlightLine(lines, 1, 500);
+            await highlightLine(lines, 2, 800);
+            
+            await highlightLine(lines, 3, 800);
+            exampleVariables.compteur = 0;
+            updateVariableDisplay(exampleVariables, 'exampleVarList');
+            
+            await highlightLine(lines, 4, 800);
+            document.getElementById('example-led1').classList.add('on');
+            
+            await highlightLine(lines, 5, 500);
+            await highlightLine(lines, 7, 500);
+            await highlightLine(lines, 8, 500);
+        }
+
+        function resetExample() {
+            document.getElementById('example-led1').classList.remove('on');
+            document.getElementById('example-led2').classList.remove('on');
+            document.getElementById('example-led9').classList.remove('on');
+            document.getElementById('example-led10').classList.remove('on');
+            Object.keys(exampleVariables).forEach(key => delete exampleVariables[key]);
+            updateVariableDisplay(exampleVariables, 'exampleVarList');
+            document.querySelectorAll('#exampleCode .code-line').forEach(line => {
+                line.classList.remove('executing');
+            });
+        }
+
+        async function highlightLine(lines, index, duration) {
+            lines[index].classList.add('executing');
+            await new Promise(resolve => setTimeout(resolve, duration));
+            lines[index].classList.remove('executing');
+        }
+
+        // Student code execution with loop support
+        async function runStudentCode() {
+            console.log('runStudentCode called');
+            if (isExecuting) return;
+    
+            isExecuting = true;
+            shouldStopExecution = false;
+    
+             console.log('About to change buttons');
+             document.getElementById('btnExecute').style.display = 'none';
+             document.getElementById('btnStop').style.display = 'inline-block';
+             console.log('Buttons changed');
+    
+             resetStudent();
+             console.log('Reset complete');
+    
+             const code = document.getElementById('codeEditor').value;
+             console.log('Code retrieved:', code.substring(0, 50));
+    
+            if (!code.trim()) {
+                alert('Écris d\'abord ton code !');
+                isExecuting = false;
+                document.getElementById('btnExecute').style.display = 'inline-block';
+                document.getElementById('btnStop').style.display = 'none';
+                return;
+            }
+
+            console.log('About to call executeCodeVisual');
+            try {
+                const result = await executeCodeVisual(code, true);
+                console.log('executeCodeVisual completed:', result);
+            } catch (error) {
+                console.error('Error in executeCodeVisual:', error);
+            }
+            
+            isExecuting = false;
+            document.getElementById('btnExecute').style.display = 'inline-block';
+            document.getElementById('btnStop').style.display = 'none';
+        }
+
+        function stopExecution() {
+            shouldStopExecution = true;
+        }
+
+        async function executeCodeVisual(code, withLooping) {
+            const studentCodeDisplay = document.getElementById('studentCodeDisplay');
+            const codeEditor = document.getElementById('codeEditor');
+            
+            const lines = code.split('\n');
+            let htmlCode = '';
+            lines.forEach((line, index) => {
+                let displayLine = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                displayLine = displayLine.replace(/\b(void setup|void loop)\b/g, '<span class="keyword">$1</span>');
+                displayLine = displayLine.replace(/(\/\/.*)/g, '<span class="comment">$1</span>');
+                htmlCode += `<div class="code-line" data-line="${index}">${displayLine || '&nbsp;'}</div>`;
+            });
+            
+            studentCodeDisplay.innerHTML = htmlCode;
+            studentCodeDisplay.style.display = 'block';
+            codeEditor.style.display = 'none';
+            
+            const studentLines = studentCodeDisplay.querySelectorAll('.code-line');
+            const declaredPins = new Set();
+            let inSetup = false;
+            let inLoop = false;
+            let loopStartLine = -1;
+            let loopEndLine = -1;
+            
+            try {
+                // First pass: execute setup
+                for (let i = 0; i < lines.length && !shouldStopExecution; i++) {
+                    const line = lines[i];
+                    const trimmedLine = line.trim().toLowerCase();
+                    
+                    if (trimmedLine === '') continue;
+                    
+                    studentLines[i].classList.add('executing');
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    if (trimmedLine.includes('void setup')) {
+                        inSetup = true;
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        studentLines[i].classList.remove('executing');
+                        continue;
+                    }
+                    
+                    if (trimmedLine.includes('void loop')) {
+                        inSetup = false;
+                        inLoop = true;
+                        loopStartLine = i + 2; // After "void loop()" and "{"
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        studentLines[i].classList.remove('executing');
+                        
+                        // Find loop end
+                        for (let j = i + 1; j < lines.length; j++) {
+                            if (lines[j].trim() === '}') {
+                                loopEndLine = j;
+                                break;
+                            }
+                        }
+                        
+                        if (!withLooping) break;
+                        continue;
+                    }
+                    
+                    if (trimmedLine === '{' || (trimmedLine === '}' && inSetup)) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        studentLines[i].classList.remove('executing');
+                        if (trimmedLine === '}') inSetup = false;
+                        continue;
+                    }
+                    
+                    if (inSetup) {
+                        await executeLineCommand(trimmedLine, i, studentLines, declaredPins);
+                    }
+                    
+        
+                }
+                
+                // Loop execution if enabled and loop exists
+                if (withLooping && loopStartLine !== -1 && loopEndLine !== -1) {
+                    while (!shouldStopExecution) {
+                        for (let i = loopStartLine; i < loopEndLine && !shouldStopExecution; i++) {
+                            const line = lines[i];
+                            const trimmedLine = line.trim().toLowerCase();
+                            
+                            if (trimmedLine === '' || trimmedLine.startsWith('//')) {
+                                await new Promise(resolve => setTimeout(resolve, 200));
+                                continue;
+                            }
+                            
+                            studentLines[i].classList.add('executing');
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                            
+                            await executeLineCommand(trimmedLine, i, studentLines, declaredPins);
+                        }
+                        
+                        // Wait between loop iterations
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+                
+                return { success: true };
+                
+            } catch (error) {
+                if (studentLines[error.line]) {
+                    studentLines[error.line].classList.remove('executing');
+                    studentLines[error.line].classList.add('error');
+                    
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.textContent = error.message;
+                    studentLines[error.line].appendChild(errorDiv);
+            }
+                return { success: false, error: error.message };
+            }
+        }
+        
+
+async function executeLineCommand(trimmedLine, lineIndex, studentLines, declaredPins) {
+            if (trimmedLine.startsWith('//')) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                studentLines[lineIndex].classList.remove('executing');
+                return;
+            }
+            
+            if (!trimmedLine.endsWith(';')) {
+                studentLines[lineIndex].classList.remove('executing');
+                studentLines[lineIndex].classList.add('error');
+                throw { line: lineIndex, message: 'Erreur: Il manque un point-virgule (;) à la fin de cette ligne!' };
+            }
+            
+            // Variable assignment
+            if (trimmedLine.includes('=')) {
+                const match = trimmedLine.match(/(\w+)\s*=\s*(.+);/);
+                if (match) {
+                    const varName = match[1];
+                    const varValue = match[2].trim();
+                    studentVariables[varName] = varValue;
+                    updateVariableDisplay(studentVariables, 'studentVarList');
+                }
+            }
+            // Pin declarations
+            else if (trimmedLine === 'pin1;') {
+                declaredPins.add('pin1');
+            } else if (trimmedLine === 'pin2;') {
+                declaredPins.add('pin2');
+            } else if (trimmedLine === 'pin9;') {
+                declaredPins.add('pin9');
+            } else if (trimmedLine === 'pin10;') {
+                declaredPins.add('pin10');
+            } else if (trimmedLine.match(/^pin\d+;$/)) {
+                const pinNum = trimmedLine.match(/pin(\d+);/)[1];
+                studentLines[lineIndex].classList.remove('executing');
+                studentLines[lineIndex].classList.add('error');
+                throw { line: lineIndex, message: `Erreur: pin${pinNum} n'existe pas!` };
+            }
+            // Turn pins on
+            else if (trimmedLine.includes('pin1_allumé') || trimmedLine.includes('pin1_allume')) {
+                if (!declaredPins.has('pin1')) {
+                    studentLines[lineIndex].classList.remove('executing');
+                    studentLines[lineIndex].classList.add('error');
+                    throw { line: lineIndex, message: 'Erreur: pin1 n\'a pas été déclaré!' };
+                }
+                document.getElementById('student-led1').classList.add('on');
+            } else if (trimmedLine.includes('pin2_allumé') || trimmedLine.includes('pin2_allume')) {
+                if (!declaredPins.has('pin2')) {
+                    studentLines[lineIndex].classList.remove('executing');
+                    studentLines[lineIndex].classList.add('error');
+                    throw { line: lineIndex, message: 'Erreur: pin2 n\'a pas été déclaré!' };
+                }
+                document.getElementById('student-led2').classList.add('on');
+            } else if (trimmedLine.includes('pin9_allumé') || trimmedLine.includes('pin9_allume')) {
+                if (!declaredPins.has('pin9')) {
+                    studentLines[lineIndex].classList.remove('executing');
+                    studentLines[lineIndex].classList.add('error');
+                    throw { line: lineIndex, message: 'Erreur: pin9 n\'a pas été déclaré!' };
+                }
+                document.getElementById('student-led9').classList.add('on');
+            } else if (trimmedLine.includes('pin10_allumé') || trimmedLine.includes('pin10_allume')) {
+                if (!declaredPins.has('pin10')) {
+                    studentLines[lineIndex].classList.remove('executing');
+                    studentLines[lineIndex].classList.add('error');
+                    throw { line: lineIndex, message: 'Erreur: pin10 n\'a pas été déclaré!' };
+                }
+                document.getElementById('student-led10').classList.add('on');
+            }
+            // Turn pins off
+            else if (trimmedLine.includes('pin1_éteint') || trimmedLine.includes('pin1_eteint')) {
+                if (!declaredPins.has('pin1')) {
+                    studentLines[lineIndex].classList.remove('executing');
+                    studentLines[lineIndex].classList.add('error');
+                    throw { line: lineIndex, message: 'Erreur: pin1 n\'a pas été déclaré!' };
+                }
+                document.getElementById('student-led1').classList.remove('on');
+            } else if (trimmedLine.includes('pin2_éteint') || trimmedLine.includes('pin2_eteint')) {
+                if (!declaredPins.has('pin2')) {
+                    studentLines[lineIndex].classList.remove('executing');
+                    studentLines[lineIndex].classList.add('error');
+                    throw { line: lineIndex, message: 'Erreur: pin2 n\'a pas été déclaré!' };
+                }
+                document.getElementById('student-led2').classList.remove('on');
+            } else if (trimmedLine.includes('pin9_éteint') || trimmedLine.includes('pin9_eteint')) {
+                if (!declaredPins.has('pin9')) {
+                    studentLines[lineIndex].classList.remove('executing');
+                    studentLines[lineIndex].classList.add('error');
+                    throw { line: lineIndex, message: 'Erreur: pin9 n\'a pas été déclaré!' };
+                }
+                document.getElementById('student-led9').classList.remove('on');
+            } else if (trimmedLine.includes('pin10_éteint') || trimmedLine.includes('pin10_eteint')) {
+                if (!declaredPins.has('pin10')) {
+                    studentLines[lineIndex].classList.remove('executing');
+                    studentLines[lineIndex].classList.add('error');
+                    throw { line: lineIndex, message: 'Erreur: pin10 n\'a pas été déclaré!' };
+                }
+                document.getElementById('student-led10').classList.remove('on');
+            }
+            // Check for typos
+            else if (trimmedLine.match(/pin\d+_\w+;/)) {
+                studentLines[lineIndex].classList.remove('executing');
+                studentLines[lineIndex].classList.add('error');
+                throw { line: lineIndex, message: 'Erreur: Commande incorrecte! Utilise "pinX_allumé;" ou "pinX_éteint;"' };
+            }
+            // Unknown command
+            else if (trimmedLine.includes('pin')) {
+                studentLines[lineIndex].classList.remove('executing');
+                studentLines[lineIndex].classList.add('error');
+                throw { line: lineIndex, message: 'Erreur: Syntaxe incorrecte!' };
+            }
+            // Nonsense line
+            else if (!trimmedLine.includes('=')) {
+                studentLines[lineIndex].classList.remove('executing');
+                studentLines[lineIndex].classList.add('error');
+                throw { line: lineIndex, message: 'Erreur: Cette ligne n\'est pas du code valide!' };
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 600));
+            studentLines[lineIndex].classList.remove('executing');
+        }
+
+        // Validation using state-based checking
+        async function checkCode() {
+            const feedback = document.getElementById('feedbackBox');
+            const title = document.getElementById('feedbackTitle');
+            const text = document.getElementById('feedbackText');
+            
+            feedback.classList.add('visible');
+            
+            // Execute code silently for validation
+            const result = await executeCodeForValidation();
+            
+            if (!result.success) {
+                title.textContent = 'Erreur détectée';
+                text.textContent = result.error;
+                return;
+            }
+            
+            // Check against expected state
+            const validation = validateState(result.state, LEVEL_CONFIG.expectedAfterSetup);
+            
+            if (validation.success) {
+                title.textContent = 'Parfait !';
+                text.textContent = 'Excellent travail ! Tu as ajouté pin9, gardé la variable compteur, et allumé pin9 au lieu de pin1. Tu comprends maintenant comment travailler avec des pins ET des variables ensemble !';
+            } else {
+                title.textContent = 'Pas tout à fait...';
+                text.textContent = 'Problèmes détectés : ' + validation.errors.join(' • ');
+            }
+        }
+
+        async function executeCodeForValidation() {
+            // Reset state
+            const testVars = {};
+            const testPins = {
+                pin1: { declared: false, on: false },
+                pin2: { declared: false, on: false },
+                pin9: { declared: false, on: false },
+                pin10: { declared: false, on: false }
+            };
+            
+            const code = document.getElementById('codeEditor').value;
+            if (!code.trim()) {
+                return { success: false, error: 'Le code est vide !' };
+            }
+            
+            const lines = code.split('\n');
+            let inSetup = false;
+            
+            try {
+                for (let i = 0; i < lines.length; i++) {
+                    const trimmedLine = lines[i].trim().toLowerCase();
+                    
+                    if (trimmedLine === '') continue;
+                    
+                    if (trimmedLine.includes('void setup')) {
+                        inSetup = true;
+                        continue;
+                    }
+                    
+                    if (trimmedLine.includes('void loop')) {
+                        break; // Only validate setup for niveau 2
+                    }
+                    
+                    if (trimmedLine === '{' || trimmedLine === '}') {
+                        if (trimmedLine === '}') inSetup = false;
+                        continue;
+                    }
+                    
+                    if (inSetup) {
+                        if (!trimmedLine.endsWith(';') && !trimmedLine.startsWith('//')) {
+                            throw { line: i, message: 'Il manque un point-virgule' };
+                        }
+                        
+                        // Variable assignment
+                        if (trimmedLine.includes('=')) {
+                            const match = trimmedLine.match(/(\w+)\s*=\s*(.+);/);
+                            if (match) {
+                                testVars[match[1]] = match[2].trim();
+                            }
+                        }
+                        // Pin declarations
+                        else if (trimmedLine === 'pin1;') testPins.pin1.declared = true;
+                        else if (trimmedLine === 'pin2;') testPins.pin2.declared = true;
+                        else if (trimmedLine === 'pin9;') testPins.pin9.declared = true;
+                        else if (trimmedLine === 'pin10;') testPins.pin10.declared = true;
+                        // Pin actions
+                        else if (trimmedLine.includes('pin1_allumé') || trimmedLine.includes('pin1_allume')) {
+                            if (!testPins.pin1.declared) throw { line: i, message: 'pin1 utilisé avant d\'être déclaré' };
+                            testPins.pin1.on = true;
+                        }
+                        else if (trimmedLine.includes('pin2_allumé') || trimmedLine.includes('pin2_allume')) {
+                            if (!testPins.pin2.declared) throw { line: i, message: 'pin2 utilisé avant d\'être déclaré' };
+                            testPins.pin2.on = true;
+                        }
+                        else if (trimmedLine.includes('pin9_allumé') || trimmedLine.includes('pin9_allume')) {
+                            if (!testPins.pin9.declared) throw { line: i, message: 'pin9 utilisé avant d\'être déclaré' };
+                            testPins.pin9.on = true;
+                        }
+                        else if (trimmedLine.includes('pin10_allumé') || trimmedLine.includes('pin10_allume')) {
+                            if (!testPins.pin10.declared) throw { line: i, message: 'pin10 utilisé avant d\'être déclaré' };
+                            testPins.pin10.on = true;
+                        }
+                    }
+                }
+                
+                return {
+                    success: true,
+                    state: {
+                        pins: testPins,
+                        variables: testVars
+                    }
+                };
+                
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        function validateState(actualState, expectedState) {
+            const errors = [];
+            
+            // Check pins
+            for (const [pinName, expected] of Object.entries(expectedState.pins)) {
+                const actual = actualState.pins[pinName];
+                
+                if (expected.declared && !actual.declared) {
+                    errors.push(`${pinName} n'est pas déclaré`);
+                }
+                
+                if (expected.on !== undefined && actual.on !== expected.on) {
+                    if (expected.on) {
+                        errors.push(`${pinName} devrait être allumé`);
+                    } else {
+                        errors.push(`${pinName} ne devrait pas être allumé`);
+                    }
+                }
+            }
+            
+            // Check variables
+            for (const [varName, expectedValue] of Object.entries(expectedState.variables)) {
+                if (!actualState.variables[varName]) {
+                    errors.push(`La variable "${varName}" est manquante`);
+                } else if (actualState.variables[varName] !== expectedValue) {
+                    errors.push(`La variable "${varName}" devrait valoir ${expectedValue}`);
+                }
+            }
+            
+            return {
+                success: errors.length === 0,
+                errors: errors
+            };
+        }
+
+        function resetStudent() {
+            shouldStopExecution = true;
+            
+            document.getElementById('student-led1').classList.remove('on');
+            document.getElementById('student-led2').classList.remove('on');
+            document.getElementById('student-led9').classList.remove('on');
+            document.getElementById('student-led10').classList.remove('on');
+            
+            Object.keys(studentVariables).forEach(key => delete studentVariables[key]);
+            updateVariableDisplay(studentVariables, 'studentVarList');
+            
+            const studentCodeDisplay = document.getElementById('studentCodeDisplay');
+            const codeEditor = document.getElementById('codeEditor');
+            studentCodeDisplay.style.display = 'none';
+            codeEditor.style.display = 'block';
+            
+            studentCodeDisplay.querySelectorAll('.code-line').forEach(line => {
+                line.classList.remove('executing', 'error');
+                const errorMsg = line.querySelector('.error-message');
+                if (errorMsg) errorMsg.remove();
+            });
+        }
+
+        function toggleHint() {
+            const hint = document.getElementById('hintBox');
+            hint.classList.toggle('visible');
+        }
+
+        function prevLevel() {
+            window.location.href = 'quest4_niveau1.html';
+        }
+
+        function nextLevel() {
+            window.location.href = 'quest4_niveau3.html';
+        }
+        
+        // Initialize variable displays
+        updateVariableDisplay(exampleVariables, 'exampleVarList');
+        updateVariableDisplay(studentVariables, 'studentVarList');
+    </script>
+</body>
+</html>

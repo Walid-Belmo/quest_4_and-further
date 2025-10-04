@@ -1,0 +1,13 @@
+void setup()
+{
+    pin1;
+    pin9;
+    compteur = 0;
+    pin9_allumé;
+}
+
+void loop()
+{
+    // Rien ici
+}
+

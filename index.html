@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quest 4 - Niveau 2</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-heights-in-a-sunset-26070-large.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div class="container">
+        <div class="blob-card header">
+            <h1>Quest 4 - Écris Ton Propre Code</h1>
+            <div class="level-info">Niveau 2 : Ajoute une Variable</div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left side: Example -->
+            <div class="blob-card">
+                <div class="challenge-box">
+                    <h4>Exemple à Suivre</h4>
+                    <p>Ce code allume <strong>pin1</strong> et crée une <strong>variable</strong> :</p>
+                </div>
+
+                <div class="microcontroller-container">
+                    <div class="microcontroller">
+                        <div class="pins-left">
+                            <div class="pin">
+                                <span class="pin-label">Pin 1</span>
+                                <div class="led" id="example-led1"></div>
+                            </div>
+                            <div class="pin">
+                                <span class="pin-label">Pin 2</span>
+                                <div class="led" id="example-led2"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="chip">µC</div>
+                        
+                        <div class="pins-right">
+                            <div class="pin">
+                                <div class="led" id="example-led9"></div>
+                                <span class="pin-label">Pin 9</span>
+                            </div>
+                            <div class="pin">
+                                <div class="led" id="example-led10"></div>
+                                <span class="pin-label">Pin 10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="variables-display" id="exampleVariables">
+                        <h5>📦 Variables</h5>
+                        <div id="exampleVarList"></div>
+                    </div>
+                </div>
+
+                <div class="code-display" id="exampleCode">
+<div class="code-line"><span class="keyword">void setup</span>()</div>
+<div class="code-line">{</div>
+<div class="code-line">    pin1;</div>
+<div class="code-line">    compteur = 0;</div>
+<div class="code-line">    pin1_allumé;</div>
+<div class="code-line">}</div>
+<div class="code-line"></div>
+<div class="code-line"><span class="keyword">void loop</span>()</div>
+<div class="code-line">{</div>
+<div class="code-line">    <span class="comment">// Rien ici</span></div>
+<div class="code-line">}</div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn" onclick="runExample()"><span>Exécuter l'Exemple</span></button>
+                    <button class="btn btn-secondary" onclick="resetExample()"><span>Réinitialiser</span></button>
+                </div>
+
+                <div class="hint-box" id="hintBox">
+                    <h5>Aide</h5>
+                    <p><strong>Étape 1 :</strong> Garde la ligne <code>pin1;</code></p>
+                    <p><strong>Étape 2 :</strong> Ajoute <code>pin9;</code> après pin1</p>
+                    <p><strong>Étape 3 :</strong> Garde la variable <code>compteur = 0;</code></p>
+                    <p><strong>Étape 4 :</strong> Change <code>pin1_allumé;</code> en <code>pin9_allumé;</code></p>
+                    <p><strong>Ordre important :</strong> Déclarations de pins d'abord, puis variables, puis actions sur les pins</p>
+                </div>
+            </div>
+
+            <!-- Right side: Student code -->
+            <div class="blob-card">
+                <div class="challenge-box">
+                    <h4>À Toi de Jouer</h4>
+                    <p>Modifie le code pour :</p>
+                    <p>• Garder <strong>pin1</strong> et ajouter <strong>pin9</strong></p>
+                    <p>• Garder la variable <strong>compteur = 0</strong></p>
+                    <p>• Allumer <strong>pin9</strong> au lieu de pin1</p>
+                </div>
+
+                <div class="microcontroller-container">
+                    <div class="microcontroller">
+                        <div class="pins-left">
+                            <div class="pin">
+                                <span class="pin-label">Pin 1</span>
+                                <div class="led" id="student-led1"></div>
+                            </div>
+                            <div class="pin">
+                                <span class="pin-label">Pin 2</span>
+                                <div class="led" id="student-led2"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="chip">µC</div>
+                        
+                        <div class="pins-right">
+                            <div class="pin">
+                                <div class="led" id="student-led9"></div>
+                                <span class="pin-label">Pin 9</span>
+                            </div>
+                            <div class="pin">
+                                <div class="led" id="student-led10"></div>
+                                <span class="pin-label">Pin 10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="variables-display" id="studentVariables">
+                        <h5>📦 Variables</h5>
+                        <div id="studentVarList"></div>
+                    </div>
+                </div>
+
+                <div id="studentCodeDisplay" class="code-display" style="display: none;"></div>
+                <textarea class="code-editor" id="codeEditor" placeholder="Écris ton code ici..."></textarea>
+
+                <div class="controls">
+                    <button class="btn" id="btnExecute" onclick="runStudentCode()"><span>Exécuter Mon Code</span></button>
+                    <button class="btn btn-stop" id="btnStop" onclick="stopExecution()"><span>⏹ Arrêter</span></button>
+                    <button class="btn btn-secondary" onclick="resetStudent()"><span>Réinitialiser</span></button>
+                    <button class="btn btn-hint" onclick="toggleHint()"><span>Voir l'Aide</span></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls" style="margin-top: 40px;">
+            <button class="btn btn-secondary" onclick="prevLevel()"><span>← Niveau Précédent</span></button>
+            <button class="btn" onclick="checkCode()"><span>✓ Vérifier Mon Code</span></button>
+            <button class="btn" onclick="nextLevel()"><span>Niveau Suivant →</span></button>
+        </div>
+
+        <div class="blob-card feedback-box" id="feedbackBox">
+            <h4 id="feedbackTitle"></h4>
+            <p id="feedbackText"></p>
+        </div>
+    </div>
+
+    <!-- Load JavaScript modules in correct order -->
+    <script src="js/config.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/code-executor.js"></script>
+    <script src="js/validator.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
+
