@@ -10,6 +10,51 @@ class CodeExecutor {
     }
 
     /**
+     * Evaluate a condition (e.g., "temperature == 20")
+     * Returns { result: boolean, error: string|null }
+     */
+    evaluateCondition(condition, variables) {
+        // Remove parentheses and trim
+        condition = condition.replace(/[()]/g, '').trim();
+        
+        // Parse condition: varName == value
+        const match = condition.match(/([\w\u00C0-\u00FF]+)\s*(==|!=|>|<|>=|<=)\s*(.+)/);
+        if (!match) return { result: false, error: 'Condition invalide' };
+        
+        const varName = match[1];
+        const operator = match[2];
+        const compareValue = match[3].trim();
+        
+        // Get variable value (remove type annotation if present)
+        let varValue = variables[varName];
+        if (typeof varValue === 'string' && varValue.includes('(')) {
+            varValue = varValue.split('(')[0].trim();
+        }
+        
+        // Check if variable exists
+        if (varValue === undefined) {
+            return { result: false, error: `La variable "${varName}" n'existe pas!` };
+        }
+        
+        // Convert to numbers for comparison
+        const leftVal = parseFloat(varValue);
+        const rightVal = parseFloat(compareValue);
+        
+        let result;
+        switch (operator) {
+            case '==': result = leftVal === rightVal; break;
+            case '!=': result = leftVal !== rightVal; break;
+            case '>': result = leftVal > rightVal; break;
+            case '<': result = leftVal < rightVal; break;
+            case '>=': result = leftVal >= rightVal; break;
+            case '<=': result = leftVal <= rightVal; break;
+            default: return { result: false, error: 'Opérateur invalide' };
+        }
+        
+        return { result: result, error: null };
+    }
+
+    /**
      * Highlight a line during execution
      */
     async highlightLine(lines, index, duration) {
@@ -37,7 +82,7 @@ class CodeExecutor {
         lines.forEach((line, index) => {
             let displayLine = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             // Highlight keywords
-            displayLine = displayLine.replace(/\b(void setup|void loop|int|float|String|si|sinon|alors)\b/g, '<span class="keyword">$1</span>');
+            displayLine = displayLine.replace(/\b(void setup|void loop|int|float|String|si|alors|sinon)\b/g, '<span class="keyword">$1</span>');
             // Highlight comments
             displayLine = displayLine.replace(/(\/\/.*)/g, '<span class="comment">$1</span>');
             htmlCode += `<div class="code-line" data-line="${index}">${displayLine || '&nbsp;'}</div>`;
@@ -87,8 +132,67 @@ class CodeExecutor {
             }
             
             if (inSetup) {
+                // Handle 'si...alors' conditional
+                if (trimmedLine.includes('si ') && trimmedLine.includes('alors')) {
+                    const condMatch = trimmedLine.match(/si\s*\((.+)\)\s*alors\s*\{/);
+                    if (condMatch) {
+                        const condition = condMatch[1];
+                        const evalResult = this.evaluateCondition(condition, uiManager.exampleVariables);
+                        
+                        // Check for errors in condition evaluation
+                        if (evalResult.error) {
+                            console.error('Condition error:', evalResult.error);
+                            await this.sleep(TIMING.MEDIUM_PAUSE);
+                            continue;
+                        }
+                        
+                        const conditionResult = evalResult.result;
+                        
+                        // Find the end of the block
+                        let braceCount = 1;
+                        let blockEndLine = i;
+                        for (let j = i + 1; j < lines.length; j++) {
+                            const checkLine = lines[j].trim();
+                            if (checkLine.includes('{')) braceCount++;
+                            if (checkLine.includes('}')) {
+                                braceCount--;
+                                if (braceCount === 0) {
+                                    blockEndLine = j;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Execute or skip the block
+                        for (let j = i + 1; j < blockEndLine; j++) {
+                            const blockLine = lines[j].trim().toLowerCase();
+                            if (blockLine === '' || blockLine === '{' || blockLine === '}') continue;
+                            
+                            await this.highlightLine(displayLines, j, TIMING.LINE_HIGHLIGHT);
+                            
+                            if (conditionResult) {
+                                // Execute the line inside the block
+                                if (blockLine.includes('_allumé') || blockLine.includes('_allume')) {
+                                    const pinMatch = blockLine.match(/pin(\d+)_allum/);
+                                    if (pinMatch) {
+                                        uiManager.turnOnLED('example', pinMatch[1]);
+                                    }
+                                }
+                            }
+                            await this.sleep(TIMING.MEDIUM_PAUSE);
+                        }
+                        
+                        // Highlight closing brace
+                        await this.highlightLine(displayLines, blockEndLine, TIMING.LINE_HIGHLIGHT);
+                        await this.sleep(TIMING.SHORT_PAUSE);
+                        
+                        // Skip to end of block
+                        i = blockEndLine;
+                        continue;
+                    }
+                }
                 // Variable declaration
-                if (trimmedLine.includes('=')) {
+                else if (trimmedLine.includes('=')) {
                     const typedMatch = trimmedLine.match(/(int|float|string)\s+([\w\u00C0-\u00FF]+)\s*=\s*(.+);/);
                     if (typedMatch) {
                         const varName = typedMatch[2];
@@ -256,6 +360,77 @@ class CodeExecutor {
                 }
                 
                 if (inSetup) {
+                    // Handle 'si...alors' conditional
+                    if (trimmedLine.includes('si ') && trimmedLine.includes('alors')) {
+                        const condMatch = trimmedLine.match(/si\s*\((.+)\)\s*alors\s*\{/);
+                        if (condMatch) {
+                            const condition = condMatch[1];
+                            const evalResult = this.evaluateCondition(condition, uiManager.studentVariables);
+                            
+                            // Check for errors in condition evaluation
+                            if (evalResult.error) {
+                                studentLines[i].classList.remove('executing');
+                                studentLines[i].classList.add('error');
+                                
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'error-message';
+                                errorDiv.textContent = evalResult.error;
+                                studentLines[i].appendChild(errorDiv);
+                                
+                                throw { line: i, message: evalResult.error };
+                            }
+                            
+                            const conditionResult = evalResult.result;
+                            
+                            // Find the end of the block
+                            let braceCount = 1;
+                            let blockEndLine = i;
+                            for (let j = i + 1; j < lines.length; j++) {
+                                const checkLine = lines[j].trim();
+                                if (checkLine.includes('{')) braceCount++;
+                                if (checkLine.includes('}')) {
+                                    braceCount--;
+                                    if (braceCount === 0) {
+                                        blockEndLine = j;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            studentLines[i].classList.remove('executing');
+                            
+                            // Execute or skip the block
+                            for (let j = i + 1; j < blockEndLine; j++) {
+                                const blockLine = lines[j].trim().toLowerCase();
+                                if (blockLine === '' || blockLine === '{' || blockLine === '}') {
+                                    studentLines[j].classList.add('executing');
+                                    await this.sleep(TIMING.LINE_HIGHLIGHT);
+                                    studentLines[j].classList.remove('executing');
+                                    continue;
+                                }
+                                
+                                studentLines[j].classList.add('executing');
+                                await this.sleep(TIMING.LINE_HIGHLIGHT);
+                                
+                                if (conditionResult) {
+                                    // Execute the line inside the block
+                                    await this.executeLineCommand(blockLine, j, studentLines, declaredPins);
+                                } else {
+                                    studentLines[j].classList.remove('executing');
+                                }
+                            }
+                            
+                            // Highlight closing brace
+                            studentLines[blockEndLine].classList.add('executing');
+                            await this.sleep(TIMING.LINE_HIGHLIGHT);
+                            studentLines[blockEndLine].classList.remove('executing');
+                            
+                            // Skip to end of block
+                            i = blockEndLine;
+                            continue;
+                        }
+                    }
+                    
                     console.log('Executing setup line:', i);
                     await this.executeLineCommand(trimmedLine, i, studentLines, declaredPins);
                 } else {

@@ -248,6 +248,138 @@ void loop()
                 }
             }
         ]
+    },
+    
+    niveau3: {
+        levelNumber: 3,
+        title: "Conditions Simples (si...alors)",
+        subtitle: "Apprends à faire des choix dans ton code",
+        popup: {
+            show: true,
+            title: "🎓 Nouvelle Règle : Les Conditions !",
+            content: `
+                <p>Maintenant tu peux faire des <strong>choix</strong> dans ton code !</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li><code>si (condition) alors { action; }</code></li>
+                    <li>Si la condition est vraie, l'action est exécutée</li>
+                    <li>Si la condition est fausse, rien ne se passe</li>
+                </ul>
+                <p style="margin-top: 15px;"><strong>Exemple :</strong></p>
+                <pre style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; margin-top: 10px;"><code>int temperature = 25;
+si (temperature == 25) alors {
+    pin1_allumé;
+}</code></pre>
+            `
+        },
+        exercises: [
+            {
+                // Exercise 1/3 - Simple condition (true)
+                number: 1,
+                exampleCode: `void setup()
+{
+    pin1;
+    int capteur = 0;
+    
+    si (capteur == 0) alors {
+        pin1_allumé;
+    }
+}
+
+void loop()
+{
+    // Rien ici
+}`,
+                challenge: {
+                    title: "À Toi de Jouer",
+                    instructions: [
+                        "Déclare <strong>pin9</strong>",
+                        "Crée <strong>int temperature = 20;</strong>",
+                        "Si temperature == 20, allume <strong>pin9</strong>"
+                    ]
+                },
+                expectedState: {
+                    pins: {
+                        pin9: { declared: true, on: true }
+                    },
+                    variables: {
+                        temperature: { value: '20', type: 'int' }
+                    }
+                }
+            },
+            {
+                // Exercise 2/3 - Condition is false
+                number: 2,
+                exampleCode: `void setup()
+{
+    pin1;
+    int mode = 5;
+    
+    si (mode == 1) alors {
+        pin1_allumé;
+    }
+}
+
+void loop()
+{
+    // Rien ici
+}`,
+                challenge: {
+                    title: "À Toi de Jouer",
+                    instructions: [
+                        "Déclare <strong>pin2</strong>",
+                        "Crée <strong>int niveau = 10;</strong>",
+                        "Si niveau == 5, allume <strong>pin2</strong>"
+                    ]
+                },
+                expectedState: {
+                    pins: {
+                        pin2: { declared: true, on: false }
+                    },
+                    variables: {
+                        niveau: { value: '10', type: 'int' }
+                    }
+                }
+            },
+            {
+                // Exercise 3/3 - Multiple pins, one conditional
+                number: 3,
+                exampleCode: `void setup()
+{
+    pin1;
+    pin9;
+    int etat = 1;
+    
+    pin1_allumé;
+    
+    si (etat == 1) alors {
+        pin9_allumé;
+    }
+}
+
+void loop()
+{
+    // Rien ici
+}`,
+                challenge: {
+                    title: "À Toi de Jouer",
+                    instructions: [
+                        "Déclare <strong>pin1</strong> et <strong>pin10</strong>",
+                        "Crée <strong>int systeme = 1;</strong>",
+                        "Allume <strong>pin1</strong> (toujours)",
+                        "Si systeme == 1, allume aussi <strong>pin10</strong>"
+                    ]
+                },
+                expectedState: {
+                    pins: {
+                        pin1: { declared: true, on: true },
+                        pin10: { declared: true, on: true }
+                    },
+                    variables: {
+                        systeme: { value: '1', type: 'int' }
+                    }
+                }
+            }
+        ]
     }
 };
 
@@ -365,8 +497,8 @@ function formatCodeForDisplay(code) {
     lines.forEach((line) => {
         // Escape HTML characters
         let displayLine = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        // Highlight keywords (void setup, void loop, int, float, String)
-        displayLine = displayLine.replace(/\b(void setup|void loop|int|float|String)\b/g, '<span class="keyword">$1</span>');
+        // Highlight keywords (void setup, void loop, int, float, String, si, alors, sinon)
+        displayLine = displayLine.replace(/\b(void setup|void loop|int|float|String|si|alors|sinon)\b/g, '<span class="keyword">$1</span>');
         // Highlight comments
         displayLine = displayLine.replace(/(\/\/.*)/g, '<span class="comment">$1</span>');
         
