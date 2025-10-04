@@ -48,11 +48,50 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize UI displays
     uiManager.initializeDisplays();
     
+    // Get code editor
+    const codeEditor = document.getElementById('codeEditor');
+    
+    // Add Tab key handler for code indentation
+    if (codeEditor) {
+        codeEditor.addEventListener('keydown', function(e) {
+            // Handle Tab key for indentation
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                
+                // Get cursor position
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const value = this.value;
+                
+                if (e.shiftKey) {
+                    // Shift+Tab: Remove indentation (unindent)
+                    // Find start of line
+                    const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+                    const lineText = value.substring(lineStart, start);
+                    
+                    // Check if there are spaces at the beginning of the line
+                    const spacesMatch = lineText.match(/^(\s{1,4})/);
+                    if (spacesMatch) {
+                        const spacesToRemove = spacesMatch[1].length;
+                        this.value = value.substring(0, lineStart) + 
+                                   value.substring(lineStart + spacesToRemove);
+                        this.selectionStart = this.selectionEnd = start - spacesToRemove;
+                    }
+                } else {
+                    // Tab: Insert 4 spaces at cursor position
+                    this.value = value.substring(0, start) + '    ' + value.substring(end);
+                    
+                    // Put cursor after the inserted spaces
+                    this.selectionStart = this.selectionEnd = start + 4;
+                }
+            }
+        });
+    }
+    
     // Add keyboard shortcuts (optional enhancement)
     document.addEventListener('keydown', function(e) {
         // Ctrl/Cmd + Enter to run code
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            const codeEditor = document.getElementById('codeEditor');
             if (document.activeElement === codeEditor) {
                 e.preventDefault();
                 runStudentCode();

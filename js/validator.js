@@ -10,6 +10,10 @@ class CodeValidator {
     async checkCode() {
         console.log('Checking code');
         
+        // Get current exercise configuration
+        const exercise = getCurrentExercise();
+        const progress = getProgress();
+        
         // Execute code silently for validation
         const result = await this.executeCodeForValidation();
         
@@ -19,19 +23,42 @@ class CodeValidator {
         }
         
         // Check against expected state
-        const validation = this.validateState(result.state, LEVEL_CONFIG.expectedAfterSetup);
+        const validation = this.validateState(result.state, exercise.expectedState);
         
         if (validation.success) {
-            uiManager.showFeedback(
-                'Parfait !',
-                'Excellent travail ! Tu as ajouté pin9, gardé la variable compteur, et allumé pin9 au lieu de pin1. Tu comprends maintenant comment travailler avec des pins ET des variables ensemble !'
-            );
+            // Success! Show celebration
+            this.showSuccessAnimation();
+            
+            // Check if this was the last exercise
+            if (progress.current === progress.total) {
+                uiManager.showFeedback(
+                    '🎉 Niveau Terminé !',
+                    'Bravo ! Tu as maîtrisé la déclaration de variables avec type. Prêt pour le prochain niveau ?'
+                );
+            } else {
+                // Auto-advance to next exercise after delay
+                setTimeout(() => {
+                    advanceExercise();
+                }, 2000);
+            }
         } else {
             uiManager.showFeedback(
                 'Pas tout à fait...',
                 'Problèmes détectés : ' + validation.errors.join(' • ')
             );
         }
+    }
+
+    /**
+     * Show success animation
+     */
+    showSuccessAnimation() {
+        const successMsg = document.getElementById('successMessage');
+        successMsg.classList.add('show');
+        
+        setTimeout(() => {
+            successMsg.classList.remove('show');
+        }, 2000);
     }
 
     /**
@@ -54,6 +81,8 @@ class CodeValidator {
         
         const lines = code.split('\n');
         let inSetup = false;
+        let inLoop = false;
+        const declaredPins = new Set();
         
         try {
             for (let i = 0; i < lines.length; i++) {
@@ -63,51 +92,102 @@ class CodeValidator {
                 
                 if (trimmedLine.includes('void setup')) {
                     inSetup = true;
+                    inLoop = false;
                     continue;
                 }
                 
                 if (trimmedLine.includes('void loop')) {
-                    break; // Only validate setup for niveau 2
-                }
-                
-                if (trimmedLine === '{' || trimmedLine === '}') {
-                    if (trimmedLine === '}') inSetup = false;
+                    inSetup = false;
+                    inLoop = true;
                     continue;
                 }
                 
-                if (inSetup) {
+                if (trimmedLine === '{' || trimmedLine === '}') {
+                    if (trimmedLine === '}') {
+                        inSetup = false;
+                        // Don't set inLoop to false here, continue processing loop
+                    }
+                    continue;
+                }
+                
+                if (inSetup || inLoop) {
                     if (!trimmedLine.endsWith(';') && !trimmedLine.startsWith('//')) {
                         throw { line: i, message: 'Il manque un point-virgule' };
                     }
                     
-                    // Variable assignment
+                    // Variable assignment with type (int, float, String)
                     if (trimmedLine.includes('=')) {
-                        const match = trimmedLine.match(/(\w+)\s*=\s*(.+);/);
-                        if (match) {
-                            testVars[match[1]] = match[2].trim();
+                        // Match: int varName = value; or float varName = value;
+                        const typedMatch = trimmedLine.match(/(int|float|string)\s+(\w+)\s*=\s*(.+);/);
+                        if (typedMatch) {
+                            const varType = typedMatch[1];
+                            const varName = typedMatch[2];
+                            const varValue = typedMatch[3].trim();
+                            testVars[varName] = {
+                                value: varValue,
+                                type: varType
+                            };
+                        } else {
+                            // Untyped variable (old style)
+                            const match = trimmedLine.match(/(\w+)\s*=\s*(.+);/);
+                            if (match) {
+                                testVars[match[1]] = {
+                                    value: match[2].trim(),
+                                    type: 'untyped'
+                                };
+                            }
                         }
                     }
-                    // Pin declarations
-                    else if (trimmedLine === 'pin1;') testPins.pin1.declared = true;
-                    else if (trimmedLine === 'pin2;') testPins.pin2.declared = true;
-                    else if (trimmedLine === 'pin9;') testPins.pin9.declared = true;
-                    else if (trimmedLine === 'pin10;') testPins.pin10.declared = true;
-                    // Pin actions
+                    // Pin declarations (only in setup)
+                    else if (inSetup && trimmedLine === 'pin1;') {
+                        testPins.pin1.declared = true;
+                        declaredPins.add('pin1');
+                    }
+                    else if (inSetup && trimmedLine === 'pin2;') {
+                        testPins.pin2.declared = true;
+                        declaredPins.add('pin2');
+                    }
+                    else if (inSetup && trimmedLine === 'pin9;') {
+                        testPins.pin9.declared = true;
+                        declaredPins.add('pin9');
+                    }
+                    else if (inSetup && trimmedLine === 'pin10;') {
+                        testPins.pin10.declared = true;
+                        declaredPins.add('pin10');
+                    }
+                    // Pin actions (can be in setup OR loop)
                     else if (trimmedLine.includes('pin1_allumé') || trimmedLine.includes('pin1_allume')) {
-                        if (!testPins.pin1.declared) throw { line: i, message: 'pin1 utilisé avant d\'être déclaré' };
+                        if (!declaredPins.has('pin1')) throw { line: i, message: 'pin1 utilisé avant d\'être déclaré' };
                         testPins.pin1.on = true;
                     }
                     else if (trimmedLine.includes('pin2_allumé') || trimmedLine.includes('pin2_allume')) {
-                        if (!testPins.pin2.declared) throw { line: i, message: 'pin2 utilisé avant d\'être déclaré' };
+                        if (!declaredPins.has('pin2')) throw { line: i, message: 'pin2 utilisé avant d\'être déclaré' };
                         testPins.pin2.on = true;
                     }
                     else if (trimmedLine.includes('pin9_allumé') || trimmedLine.includes('pin9_allume')) {
-                        if (!testPins.pin9.declared) throw { line: i, message: 'pin9 utilisé avant d\'être déclaré' };
+                        if (!declaredPins.has('pin9')) throw { line: i, message: 'pin9 utilisé avant d\'être déclaré' };
                         testPins.pin9.on = true;
                     }
                     else if (trimmedLine.includes('pin10_allumé') || trimmedLine.includes('pin10_allume')) {
-                        if (!testPins.pin10.declared) throw { line: i, message: 'pin10 utilisé avant d\'être déclaré' };
+                        if (!declaredPins.has('pin10')) throw { line: i, message: 'pin10 utilisé avant d\'être déclaré' };
                         testPins.pin10.on = true;
+                    }
+                    // Turn pins off (can be in setup OR loop)
+                    else if (trimmedLine.includes('pin1_éteint') || trimmedLine.includes('pin1_eteint')) {
+                        if (!declaredPins.has('pin1')) throw { line: i, message: 'pin1 utilisé avant d\'être déclaré' };
+                        testPins.pin1.on = false;
+                    }
+                    else if (trimmedLine.includes('pin2_éteint') || trimmedLine.includes('pin2_eteint')) {
+                        if (!declaredPins.has('pin2')) throw { line: i, message: 'pin2 utilisé avant d\'être déclaré' };
+                        testPins.pin2.on = false;
+                    }
+                    else if (trimmedLine.includes('pin9_éteint') || trimmedLine.includes('pin9_eteint')) {
+                        if (!declaredPins.has('pin9')) throw { line: i, message: 'pin9 utilisé avant d\'être déclaré' };
+                        testPins.pin9.on = false;
+                    }
+                    else if (trimmedLine.includes('pin10_éteint') || trimmedLine.includes('pin10_eteint')) {
+                        if (!declaredPins.has('pin10')) throw { line: i, message: 'pin10 utilisé avant d\'être déclaré' };
+                        testPins.pin10.on = false;
                     }
                 }
             }
@@ -149,11 +229,27 @@ class CodeValidator {
         }
         
         // Check variables
-        for (const [varName, expectedValue] of Object.entries(expectedState.variables)) {
-            if (!actualState.variables[varName]) {
+        for (const [varName, expectedVar] of Object.entries(expectedState.variables)) {
+            const actualVar = actualState.variables[varName];
+            
+            if (!actualVar) {
                 errors.push(`La variable "${varName}" est manquante`);
-            } else if (actualState.variables[varName] !== expectedValue) {
-                errors.push(`La variable "${varName}" devrait valoir ${expectedValue}`);
+            } else {
+                // Check value
+                if (typeof expectedVar === 'object') {
+                    if (actualVar.value !== expectedVar.value) {
+                        errors.push(`La variable "${varName}" devrait valoir ${expectedVar.value}`);
+                    }
+                    // Check type if specified
+                    if (expectedVar.type && actualVar.type !== expectedVar.type) {
+                        errors.push(`La variable "${varName}" devrait être de type ${expectedVar.type}`);
+                    }
+                } else {
+                    // Old format compatibility
+                    if (actualVar.value !== expectedVar) {
+                        errors.push(`La variable "${varName}" devrait valoir ${expectedVar}`);
+                    }
+                }
             }
         }
         

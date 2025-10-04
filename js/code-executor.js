@@ -36,7 +36,9 @@ class CodeExecutor {
         
         lines.forEach((line, index) => {
             let displayLine = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            displayLine = displayLine.replace(/\b(void setup|void loop)\b/g, '<span class="keyword">$1</span>');
+            // Highlight keywords
+            displayLine = displayLine.replace(/\b(void setup|void loop|int|float|String|si|sinon|alors)\b/g, '<span class="keyword">$1</span>');
+            // Highlight comments
             displayLine = displayLine.replace(/(\/\/.*)/g, '<span class="comment">$1</span>');
             htmlCode += `<div class="code-line" data-line="${index}">${displayLine || '&nbsp;'}</div>`;
         });
@@ -49,22 +51,70 @@ class CodeExecutor {
      */
     async runExample() {
         this.resetExample();
-        const lines = document.querySelectorAll('#exampleCode .code-line');
         
-        await this.highlightLine(lines, 0, TIMING.SHORT_PAUSE);
-        await this.highlightLine(lines, 1, TIMING.SHORT_PAUSE);
-        await this.highlightLine(lines, 2, TIMING.LONG_PAUSE);
+        const exercise = getCurrentExercise();
+        const code = exercise.exampleCode;
+        const lines = code.split('\n');
+        const displayLines = document.querySelectorAll('#exampleCode .code-line');
         
-        await this.highlightLine(lines, 3, TIMING.LONG_PAUSE);
-        uiManager.exampleVariables.compteur = 0;
-        uiManager.updateVariableDisplay(uiManager.exampleVariables, 'exampleVarList');
+        const declaredPins = new Set();
+        let inSetup = false;
         
-        await this.highlightLine(lines, 4, TIMING.LONG_PAUSE);
-        uiManager.turnOnLED('example', '1');
-        
-        await this.highlightLine(lines, 5, TIMING.SHORT_PAUSE);
-        await this.highlightLine(lines, 7, TIMING.SHORT_PAUSE);
-        await this.highlightLine(lines, 8, TIMING.SHORT_PAUSE);
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const trimmedLine = line.trim().toLowerCase();
+            
+            if (trimmedLine === '') continue;
+            
+            await this.highlightLine(displayLines, i, TIMING.LINE_HIGHLIGHT);
+            
+            if (trimmedLine.includes('void setup')) {
+                inSetup = true;
+                await this.sleep(TIMING.SHORT_PAUSE);
+                continue;
+            }
+            
+            if (trimmedLine.includes('void loop')) {
+                inSetup = false;
+                await this.sleep(TIMING.SHORT_PAUSE);
+                break;
+            }
+            
+            if (trimmedLine === '{' || trimmedLine === '}') {
+                await this.sleep(TIMING.SHORT_PAUSE);
+                if (trimmedLine === '}') inSetup = false;
+                continue;
+            }
+            
+            if (inSetup) {
+                // Variable declaration
+                if (trimmedLine.includes('=')) {
+                    const typedMatch = trimmedLine.match(/(int|float|string)\s+(\w+)\s*=\s*(.+);/);
+                    if (typedMatch) {
+                        const varName = typedMatch[2];
+                        const varValue = typedMatch[3].trim();
+                        const varType = typedMatch[1];
+                        uiManager.exampleVariables[varName] = `${varValue} (${varType})`;
+                        uiManager.updateVariableDisplay(uiManager.exampleVariables, 'exampleVarList');
+                    }
+                    await this.sleep(TIMING.MEDIUM_PAUSE);
+                }
+                // Pin declarations
+                else if (trimmedLine.match(/^pin\d+;$/)) {
+                    const pinMatch = trimmedLine.match(/pin(\d+);/);
+                    if (pinMatch) declaredPins.add(`pin${pinMatch[1]}`);
+                    await this.sleep(TIMING.MEDIUM_PAUSE);
+                }
+                // Pin actions
+                else if (trimmedLine.includes('_allumé') || trimmedLine.includes('_allume')) {
+                    const pinMatch = trimmedLine.match(/pin(\d+)_allum/);
+                    if (pinMatch) {
+                        uiManager.turnOnLED('example', pinMatch[1]);
+                    }
+                    await this.sleep(TIMING.MEDIUM_PAUSE);
+                }
+            }
+        }
     }
 
     /**
@@ -271,14 +321,25 @@ class CodeExecutor {
             throw { line: lineIndex, message: 'Erreur: Il manque un point-virgule (;) à la fin de cette ligne!' };
         }
         
-        // Variable assignment
+        // Variable assignment (typed or untyped)
         if (trimmedLine.includes('=')) {
-            const match = trimmedLine.match(/(\w+)\s*=\s*(.+);/);
-            if (match) {
-                const varName = match[1];
-                const varValue = match[2].trim();
-                uiManager.studentVariables[varName] = varValue;
+            // Try typed variable first: int varName = value;
+            const typedMatch = trimmedLine.match(/(int|float|string)\s+(\w+)\s*=\s*(.+);/);
+            if (typedMatch) {
+                const varType = typedMatch[1];
+                const varName = typedMatch[2];
+                const varValue = typedMatch[3].trim();
+                uiManager.studentVariables[varName] = `${varValue} (${varType})`;
                 uiManager.updateVariableDisplay(uiManager.studentVariables, 'studentVarList');
+            } else {
+                // Untyped variable (old style)
+                const match = trimmedLine.match(/(\w+)\s*=\s*(.+);/);
+                if (match) {
+                    const varName = match[1];
+                    const varValue = match[2].trim();
+                    uiManager.studentVariables[varName] = varValue;
+                    uiManager.updateVariableDisplay(uiManager.studentVariables, 'studentVarList');
+                }
             }
         }
         // Pin declarations
