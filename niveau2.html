@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quest 4 - Niveau 2</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Progress Bar Styles */
+        .progress-container {
+            background: rgba(167, 139, 250, 0.1);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 20px;
+            padding: 15px 25px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .progress-label {
+            color: #a78bfa;
+            font-weight: 700;
+            font-size: 1.1em;
+            min-width: 120px;
+        }
+
+        .progress-bar-bg {
+            flex: 1;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #a78bfa, #22d3ee);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+            width: 33.33%;
+        }
+
+        /* Popup Modal Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup-overlay.visible {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .popup-content {
+            background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+            border: 2px solid rgba(167, 139, 250, 0.5);
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .popup-content h3 {
+            color: #a78bfa;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .popup-content p, .popup-content li {
+            color: #d1d5db;
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .popup-content ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .popup-content li {
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .popup-content li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #22d3ee;
+        }
+
+        .popup-content code {
+            background: rgba(167, 139, 250, 0.2);
+            padding: 2px 8px;
+            border-radius: 5px;
+            color: #22d3ee;
+            font-family: 'Courier New', monospace;
+        }
+
+        .popup-close-btn {
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        /* Success Animation */
+        .success-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 2em;
+            font-weight: 800;
+            z-index: 2000;
+            box-shadow: 0 20px 60px rgba(16, 185, 129, 0.5);
+            opacity: 0;
+        }
+
+        .success-message.show {
+            animation: successPop 2s ease-out forwards;
+        }
+
+        @keyframes successPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            20% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            80% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-heights-in-a-sunset-26070-large.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div class="container">
+        <div class="blob-card header">
+            <h1>Quest 4 - Variables Multiples</h1>
+            <div class="level-info">Apprends à travailler avec plusieurs variables en même temps - Exercice 1/3</div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-label" id="progressText">Exercice 1/3</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left side: Example -->
+            <div class="blob-card">
+                <div class="challenge-box">
+                    <h4>Exemple à Suivre</h4>
+                    <p>Ce code utilise plusieurs variables <strong>int</strong> :</p>
+                </div>
+
+                <div class="microcontroller-container">
+                    <div class="microcontroller">
+                        <div class="pins-left">
+                            <div class="pin">
+                                <span class="pin-label">Pin 1</span>
+                                <div class="led" id="example-led1"></div>
+                            </div>
+                            <div class="pin">
+                                <span class="pin-label">Pin 2</span>
+                                <div class="led" id="example-led2"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="chip">µC</div>
+                        
+                        <div class="pins-right">
+                            <div class="pin">
+                                <div class="led" id="example-led9"></div>
+                                <span class="pin-label">Pin 9</span>
+                            </div>
+                            <div class="pin">
+                                <div class="led" id="example-led10"></div>
+                                <span class="pin-label">Pin 10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="variables-display" id="exampleVariables">
+                        <h5>📦 Variables</h5>
+                        <div id="exampleVarList"></div>
+                    </div>
+                </div>
+
+                <div class="code-display" id="exampleCode">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+
+                <div class="controls">
+                    <button class="btn" onclick="runExample()"><span>Exécuter l'Exemple</span></button>
+                    <button class="btn btn-secondary" onclick="resetExample()"><span>Réinitialiser</span></button>
+                </div>
+            </div>
+
+            <!-- Right side: Student code -->
+            <div class="blob-card">
+                <div class="challenge-box">
+                    <h4>À Toi de Jouer</h4>
+                    <!-- Instructions will be populated by JavaScript -->
+                </div>
+
+                <div class="microcontroller-container">
+                    <div class="microcontroller">
+                        <div class="pins-left">
+                            <div class="pin">
+                                <span class="pin-label">Pin 1</span>
+                                <div class="led" id="student-led1"></div>
+                            </div>
+                            <div class="pin">
+                                <span class="pin-label">Pin 2</span>
+                                <div class="led" id="student-led2"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="chip">µC</div>
+                        
+                        <div class="pins-right">
+                            <div class="pin">
+                                <div class="led" id="student-led9"></div>
+                                <span class="pin-label">Pin 9</span>
+                            </div>
+                            <div class="pin">
+                                <div class="led" id="student-led10"></div>
+                                <span class="pin-label">Pin 10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="variables-display" id="studentVariables">
+                        <h5>📦 Variables</h5>
+                        <div id="studentVarList"></div>
+                    </div>
+                </div>
+
+                <div id="studentCodeDisplay" class="code-display" style="display: none;"></div>
+                <textarea class="code-editor" id="codeEditor" placeholder="Écris ton code ici..."></textarea>
+
+                <div class="controls">
+                    <button class="btn" id="btnExecute" onclick="runStudentCode()"><span>Exécuter Mon Code</span></button>
+                    <button class="btn btn-stop" id="btnStop" onclick="stopExecution()"><span>⏹ Arrêter</span></button>
+                    <button class="btn btn-secondary" onclick="resetStudent()"><span>Réinitialiser</span></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls" style="margin-top: 40px;">
+            <button class="btn" onclick="checkCode()"><span>✓ Vérifier Mon Code</span></button>
+        </div>
+
+        <div class="blob-card feedback-box" id="feedbackBox">
+            <h4 id="feedbackTitle"></h4>
+            <p id="feedbackText"></p>
+        </div>
+    </div>
+
+    <!-- Rule Popup -->
+    <div class="popup-overlay" id="rulePopup">
+        <div class="popup-content">
+            <h3 id="popupTitle">Nouvelle Règle</h3>
+            <div id="popupContent"></div>
+            <button class="btn popup-close-btn" onclick="closePopup()"><span>Commencer !</span></button>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-message" id="successMessage">
+        ✓ Excellent !
+    </div>
+
+    <!-- Load JavaScript modules in correct order -->
+    <script src="js/config.js"></script>
+    <script src="js/level-configs.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/code-executor.js"></script>
+    <script src="js/validator.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        // Set current level to niveau2
+        currentLevel = 'niveau2';
+        
+        // Initialize level on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentExercise();
+        });
+    </script>
+</body>
+</html>
+

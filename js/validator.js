@@ -118,7 +118,7 @@ class CodeValidator {
                     // Variable assignment with type (int, float, String)
                     if (trimmedLine.includes('=')) {
                         // Match: int varName = value; or float varName = value;
-                        const typedMatch = trimmedLine.match(/(int|float|string)\s+(\w+)\s*=\s*(.+);/);
+                        const typedMatch = trimmedLine.match(/(int|float|string)\s+([\w\u00C0-\u00FF]+)\s*=\s*(.+);/);
                         if (typedMatch) {
                             const varType = typedMatch[1];
                             const varName = typedMatch[2];
@@ -129,7 +129,7 @@ class CodeValidator {
                             };
                         } else {
                             // Untyped variable (old style)
-                            const match = trimmedLine.match(/(\w+)\s*=\s*(.+);/);
+                            const match = trimmedLine.match(/([\w\u00C0-\u00FF]+)\s*=\s*(.+);/);
                             if (match) {
                                 testVars[match[1]] = {
                                     value: match[2].trim(),

@@ -119,6 +119,135 @@ void loop()
                 }
             }
         ]
+    },
+    
+    niveau2: {
+        levelNumber: 2,
+        title: "Variables Multiples",
+        subtitle: "Apprends à travailler avec plusieurs variables en même temps",
+        popup: {
+            show: false,
+            title: "",
+            content: ``
+        },
+        exercises: [
+            {
+                // Exercise 1/3 - Two variables, two pins
+                number: 1,
+                exampleCode: `void setup()
+{
+    pin1;
+    pin9;
+    int vitesse = 5;
+    int puissance = 10;
+    pin1_allumé;
+    pin9_allumé;
+}
+
+void loop()
+{
+    // Rien ici
+}`,
+                challenge: {
+                    title: "À Toi de Jouer",
+                    instructions: [
+                        "Déclare <strong>pin1</strong> et <strong>pin2</strong>",
+                        "Crée <strong>int temperature = 20;</strong>",
+                        "Crée <strong>int humidite = 60;</strong>",
+                        "Allume <strong>pin1</strong> et <strong>pin2</strong>"
+                    ]
+                },
+                expectedState: {
+                    pins: {
+                        pin1: { declared: true, on: true },
+                        pin2: { declared: true, on: true }
+                    },
+                    variables: {
+                        temperature: { value: '20', type: 'int' },
+                        humidite: { value: '60', type: 'int' }
+                    }
+                }
+            },
+            {
+                // Exercise 2/3 - Different pins/values
+                number: 2,
+                exampleCode: `void setup()
+{
+    pin9;
+    pin10;
+    int mode = 1;
+    int niveau = 3;
+    pin9_allumé;
+    pin10_allumé;
+}
+
+void loop()
+{
+    // Rien ici
+}`,
+                challenge: {
+                    title: "À Toi de Jouer",
+                    instructions: [
+                        "Déclare <strong>pin9</strong> et <strong>pin10</strong>",
+                        "Crée <strong>int capteur1 = 15;</strong>",
+                        "Crée <strong>int capteur2 = 25;</strong>",
+                        "Allume <strong>pin9</strong> et <strong>pin10</strong>"
+                    ]
+                },
+                expectedState: {
+                    pins: {
+                        pin9: { declared: true, on: true },
+                        pin10: { declared: true, on: true }
+                    },
+                    variables: {
+                        capteur1: { value: '15', type: 'int' },
+                        capteur2: { value: '25', type: 'int' }
+                    }
+                }
+            },
+            {
+                // Exercise 3/3 - Three variables, selective pin activation
+                number: 3,
+                exampleCode: `void setup()
+{
+    pin1;
+    pin2;
+    pin9;
+    int x = 1;
+    int y = 2;
+    int z = 3;
+    pin1_allumé;
+    pin9_allumé;
+}
+
+void loop()
+{
+    // Rien ici
+}`,
+                challenge: {
+                    title: "À Toi de Jouer",
+                    instructions: [
+                        "Déclare <strong>pin1</strong>, <strong>pin2</strong>, et <strong>pin10</strong>",
+                        "Crée <strong>int rouge = 100;</strong>",
+                        "Crée <strong>int vert = 200;</strong>",
+                        "Crée <strong>int bleu = 50;</strong>",
+                        "Allume seulement <strong>pin2</strong> et <strong>pin10</strong>"
+                    ]
+                },
+                expectedState: {
+                    pins: {
+                        pin1: { declared: true, on: false },
+                        pin2: { declared: true, on: true },
+                        pin10: { declared: true, on: true }
+                    },
+                    variables: {
+                        rouge: { value: '100', type: 'int' },
+                        vert: { value: '200', type: 'int' },
+                        bleu: { value: '50', type: 'int' }
+                    }
+                }
+            }
+        ]
     }
 };
 
@@ -213,6 +342,12 @@ function loadCurrentExercise() {
     
     // Reset student side
     resetStudent();
+    
+    // Clear the code editor for new exercise
+    const codeEditor = document.getElementById('codeEditor');
+    if (codeEditor) {
+        codeEditor.value = '';
+    }
     
     // Show popup if this is first exercise of a level with popup
     if (exercise.number === 1 && level.popup.show) {

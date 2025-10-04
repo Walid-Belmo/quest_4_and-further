@@ -89,7 +89,7 @@ class CodeExecutor {
             if (inSetup) {
                 // Variable declaration
                 if (trimmedLine.includes('=')) {
-                    const typedMatch = trimmedLine.match(/(int|float|string)\s+(\w+)\s*=\s*(.+);/);
+                    const typedMatch = trimmedLine.match(/(int|float|string)\s+([\w\u00C0-\u00FF]+)\s*=\s*(.+);/);
                     if (typedMatch) {
                         const varName = typedMatch[2];
                         const varValue = typedMatch[3].trim();
@@ -324,7 +324,7 @@ class CodeExecutor {
         // Variable assignment (typed or untyped)
         if (trimmedLine.includes('=')) {
             // Try typed variable first: int varName = value;
-            const typedMatch = trimmedLine.match(/(int|float|string)\s+(\w+)\s*=\s*(.+);/);
+            const typedMatch = trimmedLine.match(/(int|float|string)\s+([\w\u00C0-\u00FF]+)\s*=\s*(.+);/);
             if (typedMatch) {
                 const varType = typedMatch[1];
                 const varName = typedMatch[2];
@@ -333,7 +333,7 @@ class CodeExecutor {
                 uiManager.updateVariableDisplay(uiManager.studentVariables, 'studentVarList');
             } else {
                 // Untyped variable (old style)
-                const match = trimmedLine.match(/(\w+)\s*=\s*(.+);/);
+                const match = trimmedLine.match(/([\w\u00C0-\u00FF]+)\s*=\s*(.+);/);
                 if (match) {
                     const varName = match[1];
                     const varValue = match[2].trim();
